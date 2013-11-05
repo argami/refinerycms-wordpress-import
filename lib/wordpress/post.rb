@@ -24,15 +24,9 @@ module Refinery
         end
       end
 
-      def meta_keywords
-        if node.xpath('//wp:postmeta[wp:meta_key="_msp_keywords"]/wp:meta_value').count > 0
-          node.xpath('//wp:postmeta[wp:meta_key="_msp_keywords"]/wp:meta_value').first.content 
-        end
-      end
-
       def meta_description
         if node.xpath('//wp:postmeta[wp:meta_key="_msp_description"]/wp:meta_value').count > 0
-          node.xpath('//wp:postmeta[wp:meta_key="_msp_description"]/wp:meta_value').first.content 
+          node.xpath('//wp:postmeta[wp:meta_key="_msp_description"]/wp:meta_value').first.content
         end
       end
 
@@ -43,14 +37,14 @@ module Refinery
       end
 
       def to_refinery
-        user = ::Refinery::User.find_by_email(creator) || ::Refinery::User.first
+        user = ::Refinery::User.where("lower(username) = ?", creator.downcase).try(:first) || ::Refinery::User.first
         raise "Referenced User doesn't exist! Make sure the authors are imported first." \
           unless user
 
         begin
           post = ::Refinery::Blog::Post.new :title => title, :body => content_formatted,
             :draft => draft?, :published_at => post_date,
-            :user_id => user.id, :tag_list => tag_list, :meta_keywords => meta_keywords, :meta_description => meta_description
+            :user_id => user.id, :tag_list => tag_list, :meta_description => meta_description
           post.created_at = post_date
           post.save!
 
